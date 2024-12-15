@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 //const config = require('config');
 require('dotenv').config();
-////mongoURI="mongodb://127.0.0.1:27017/pharmacy"
+////mongoURI="mongodb+srv://larbi26:yTpyUiVqGi2vRj98@cluster0.ppobd.mongodb.net/pharmacy?retryWrites=true&w=majority&appName=Cluster0"
 const db = process.env.mongoURI;
 const connectDB = async () => {
     try {

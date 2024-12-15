@@ -59,6 +59,7 @@ router.post(
         (err, token) => {
           if (err) throw err;
           res.status(200).json({
+            category:actor.category,
             token,
             msg: "Log in successful",
             name: actor.name,
@@ -162,5 +163,68 @@ router.post(
     }
   }
 );
+
+
+// @route    GET api/actors
+// @desc     Fetch all actors with pagination and optional filters for willaya and nom
+// @access   Public
+router.get('/', async (req, res) => {
+  const { page = 0, size = 5, willaya, nom } = req.query; // Default pagination values
+  const limit = parseInt(size); // Number of items per page
+  const skip = parseInt(page) * limit; // Items to skip for the current page
+
+  try {
+      // Build the filter object based on query parameters
+      const filter = {};
+      if (willaya) {
+          filter.willaya = { $regex: willaya, $options: 'i' }; // Case-insensitive search for willaya
+      }
+      if (nom) {
+          filter.nom = { $regex: nom, $options: 'i' }; // Case-insensitive search for nom
+      }
+
+      // Fetch the total number of actors matching the filter
+      const totalItems = await Actor1.countDocuments(filter);
+
+      // Fetch actors with pagination and optional filters
+      const actors = await Actor1.find(filter)
+          .skip(skip)
+          .limit(limit);
+
+      // Send the response with the paginated data
+      res.json({
+          success: true,
+          data: actors,
+          totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: parseInt(page),
+      });
+  } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+
+// Download PDF for actor's profile
+router.get('/download', (req, res) => {
+  const fileId = req.query.file;  // Get fileId from the query parameter
+  const filePath = path.join('authUploads', fileId);  // Build the path using fileId
+
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'PDF file not found' });
+  }
+
+  // Send the file for download
+  res.download(filePath, (err) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ error: 'Unable to download the PDF file' });
+      }
+  });
+});
+
+
 
 module.exports = router;
