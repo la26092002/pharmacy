@@ -164,14 +164,17 @@ router.post(
   }
 );
 
+// <MenuItem value="Pharmacien">Pharmacien</MenuItem>
+      //<MenuItem value="Fournisseur">Fournisseur</MenuItem>
 
 // @route    GET api/actors
 // @desc     Fetch all actors with pagination and optional filters for willaya and nom
 // @access   Public
 router.get('/', async (req, res) => {
-  const { page = 0, size = 5, willaya, nom } = req.query; // Default pagination values
+  const { page = 0, size = 5, willaya, nom, category } = req.query; // Default pagination values
   const limit = parseInt(size); // Number of items per page
   const skip = parseInt(page) * limit; // Items to skip for the current page
+
 
   try {
       // Build the filter object based on query parameters
@@ -182,6 +185,9 @@ router.get('/', async (req, res) => {
       if (nom) {
           filter.nom = { $regex: nom, $options: 'i' }; // Case-insensitive search for nom
       }
+    if (category) {
+      filter.category = { $regex: category, $options: 'i' }; // Case-insensitive search
+    }
 
       // Fetch the total number of actors matching the filter
       const totalItems = await Actor1.countDocuments(filter);

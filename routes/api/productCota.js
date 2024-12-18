@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require("express-validator");
-const Product = require("../../models/Product");
+const Product = require("../../models/ProductCota");
 const Actor1 = require("../../models/Actor");
 const { uploadCotaProduct, processPDF, convertToPDF } = require('../../Functions/PdfFunctions');
 const path = require('path');
