@@ -41,6 +41,10 @@ const ActorSchema = new mongoose.Schema({
     },
     subscribes: [
         {
+            name: {
+                type: String,
+                require: true
+            },
             from: {
                 type: Date,
                 required: true

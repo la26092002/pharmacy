@@ -233,4 +233,63 @@ router.get('/download', (req, res) => {
 
 
 
+// @route    PUT api/actors/update/:id
+// @desc     Update selected actor's information
+// @access   Private
+router.put('/update/:id', async (req, res) => {
+  const { id } = req.params; // Get actor ID from URL parameters
+  const {
+    nom,
+    prenom,
+    telephone,
+    email,
+    willaya,
+    category,
+    dataPdf,
+    password,
+    status,
+    subscribes,
+  } = req.body;
+
+  try {
+    // Find the actor by ID
+    let actor = await Actor1.findById(id);
+
+    // If actor not found
+    if (!actor) {
+      return res.status(404).json({ msg: 'Actor not found' });
+    }
+
+    // Conditionally update the actor's fields if they are provided in the request body
+    if (nom) actor.nom = nom;
+    if (prenom) actor.prenom = prenom;
+    if (telephone) actor.telephone = telephone;
+    if (email) actor.email = email;
+    if (willaya) actor.willaya = willaya;
+    if (category) actor.category = category;
+    if (dataPdf) actor.dataPdf = dataPdf;
+
+    // If password is provided, hash and update it
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      actor.password = await bcrypt.hash(password, salt);
+    }
+
+    if (status !== undefined) actor.status = status; // Update status only if provided
+    if (subscribes) actor.subscribes = subscribes;
+
+    // Save the updated actor
+    await actor.save();
+
+    // Send the updated actor data as a response
+    res.json({ msg: 'Actor updated successfully', actor });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
+
+
 module.exports = router;
