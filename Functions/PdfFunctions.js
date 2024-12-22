@@ -51,6 +51,23 @@ const storage = multer.diskStorage({
   });
   
   const uploadCotaProduct = multer({ storage:storageCotaProduct });
+
+
+  const storageOffre = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'OffreUploads/');
+    },
+    filename: (req, file, cb) => {
+      const originalName = path.parse(file.originalname).name; // Get name without extension
+      const timestamp = Date.now(); // Current timestamp
+      const extension = path.extname(file.originalname); // File extension
+      const newFilename = `${timestamp}_${originalName}${extension}`; // New file name with timestamp prefix
+      cb(null, newFilename);
+    },
+  });
+  
+  const uploadOffre = multer({ storage:storageOffre });
+  
   
   // Function to process the file data (perform your file processing logic here)
   function processFileData(fileData) {
@@ -62,6 +79,8 @@ const storage = multer.diskStorage({
       }
     });
   }
+
+  
   
   // Function to process the PDF and count word occurrences
   async function processPDF(pdfFilePath, res) {
@@ -123,6 +142,7 @@ module.exports = {
     upload,
     uploadProduct,
     uploadCotaProduct,
+    uploadOffre,
     processFileData,
     processPDF,
     convertToPDF,

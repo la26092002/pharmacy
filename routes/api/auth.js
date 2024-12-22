@@ -37,7 +37,13 @@ router.post(
       if (!actor) {
         return res.status(400).json({ errors: [{ msg: "User does not exist" }] });
       }
+     
 
+      if (!actor.status) {
+        console.log(actor.status)
+        return res.status(400).json({ errors: [{ msg: "User does not have access" }] });
+      }
+      
       const isMatch = await bcrypt.compare(password, actor.password);
       if (!isMatch) {
         return res.status(400).json({ errors: [{ msg: "Incorrect password" }] });
