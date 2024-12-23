@@ -37,7 +37,7 @@ const ActorSchema = new mongoose.Schema({
     },
     status: {
         type: Boolean,
-        default: false,
+        default: true,
     },
     subscribes: [
         {

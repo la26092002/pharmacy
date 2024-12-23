@@ -33,7 +33,8 @@ router.post('/', uploadProduct.single('file'), [
 
     try {
         // Check if the actor exists
-        let existingActor = await Actor1.findOne({ id: actor });
+        //let existingActor = await Actor1.findOne({ id: actor });
+        let existingActor = await Actor1.findOne({ _id: actor });
         if (!existingActor) {
             return res.status(400).json({ errors: [{ msg: "Actor does not exist" }] });
         }
@@ -47,7 +48,7 @@ router.post('/', uploadProduct.single('file'), [
 
         const existingProduct = await Product.findOne({
             actor,
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            date: { $gte: startOfDay, $lte: endOfDay }
         });
 
         if (existingProduct) {

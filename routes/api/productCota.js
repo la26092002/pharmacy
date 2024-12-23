@@ -35,7 +35,7 @@ router.post('/', uploadCotaProduct.single('file'), [
         // Check if the actor exists
         let existingActor = await Actor1.findOne({ id: actor });
         if (!existingActor) {
-            return res.status(400).json({ errors: [{ msg: "Actor does not exist" }] });
+            return res.status(403).json({ errors: [{ msg: "Actor does not exist" }] });
         }
 
         // Check if a product was already added today by this actor
@@ -47,13 +47,14 @@ router.post('/', uploadCotaProduct.single('file'), [
 
         const existingProduct = await Product.findOne({
             actor,
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            date: { $gte: startOfDay, $lte: endOfDay }
         });
 
         if (existingProduct) {
-            return res.status(400).json({ error: "You can only add one product per day." });
+            return res.status(401).json({ error: "You can only add one product per day." });
         }
 
+        
         // Create and save the new product
         let product = new Product({
             name, 
