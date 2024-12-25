@@ -177,6 +177,58 @@ router.get('/:id', async (req, res) => {
 
 
 
+// PUT: Update an existing product by ID
+router.put('/:id', uploadProduct.single('file'), [
+    check("name", "name is required").not().isEmpty(),
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name } = req.body;
+    const productId = req.params.id;
+
+    try {
+        // Check if the product exists
+        let product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ msg: "Product not found" });
+        }
+
+        // If a new file is uploaded, replace the existing file
+        if (req.file) {
+            const uploadedFile = req.file;
+            const newFileName = uploadedFile.filename;
+            const newFilePath = path.join('pruductUploads', newFileName);
+
+            // Delete the old file if it exists
+            if (product.dataPdf) {
+                const oldFilePath = path.join('pruductUploads', product.dataPdf);
+                if (fs.existsSync(oldFilePath)) {
+                    fs.unlinkSync(oldFilePath);
+                }
+            }
+
+            // Update the file path in the product
+            product.dataPdf = newFileName;
+        }
+
+        // Update the product fields
+        product.name = name;
+
+        // Save the updated product
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);
+    } catch (err) {
+        console.error(err.message);
+        if (err.kind === 'ObjectId') {
+            return res.status(404).json({ msg: "Product not found" });
+        }
+        res.status(500).send('Server Error');
+    }
+});
+
 
 
 module.exports = router;
