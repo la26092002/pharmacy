@@ -15,6 +15,130 @@ const { upload, processFileData, processPDF, convertToPDF } = require('../../Fun
 require('dotenv').config();
 
 
+
+// @route    POST api/auth/email
+// @desc     forget password and get token
+// @access   Public
+router.post(
+  "/email",
+  [
+    check("email", "email is required").exists()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    try {
+      let actor = await Actor1.findOne({ email:email });
+      if (!actor) {
+        return res.status(400).json({ errors: [{ msg: "User does not exist" }] });
+      }
+
+
+       // Generate a random 4-digit number
+       const randomNumber = Math.floor(1000 + Math.random() * 9000);
+      
+
+       // Create payload for JWT
+       const payload = {
+         randomNumber,
+         email, // Include email for reference in the token
+       };
+ 
+       // Sign the JWT with your secret key
+       const token = jwt.sign(payload, "your_jwt_secret_key", {
+         expiresIn: "1h", // Token expiry time
+       });
+ 
+       var nodemailer = require('nodemailer');
+// create reusable transporter object using the default SMTP transport
+const transporter = nodemailer.createTransport({
+  port: 465,               // true for 465, false for other ports
+  host: "smtp.gmail.com",
+     auth: {
+          user: 'larbibenyakhou.info@gmail.com',
+          pass: 'pwji maxd grmy kpvs',
+       },
+  secure: true,
+  });
+
+  const mailData = {
+    from: 'larbibenyakhou.info@gmail.com',  // sender address
+      to: email,   // list of receivers
+      subject: 'Sending Email from ELSAIDALIYA',
+      text: 'That was easy!',
+      html: `<b>Hey there! </b><br> This is yout code : ${randomNumber}<br/>`,
+    };
+
+    transporter.sendMail(mailData, function (err, info) {
+      if(err)
+        console.log(err)
+      else
+        console.log(info);
+   });
+
+       // Return the token
+       res.json({ token });
+     
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server error");
+    }
+  }
+);
+
+// @route    POST api/auth/validate
+// @desc     Validate token and reset password
+// @access   Public
+router.post("/validate", async (req, res) => {
+  const token = req.header("Authorization");
+  const { number, newPassword } = req.body;
+
+  // Check if token is provided
+  if (!token) {
+    return res.status(401).json({ errors: [{ msg: "No token, authorization denied" }] });
+  }
+
+  // Check if the number and newPassword are provided
+  if (!number || !newPassword) {
+    return res.status(400).json({ errors: [{ msg: "Number and new password are required" }] });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, "your_jwt_secret_key");
+
+    // Check if the number matches
+    if (decoded.randomNumber !== number) {
+      return res.status(400).json({ success: false, message: "Validation failed. Invalid code." });
+    }
+
+    // Find the actor by email
+    const actor = await Actor1.findOne({ email: decoded.email });
+    if (!actor) {
+      return res.status(400).json({ errors: [{ msg: "User not found" }] });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update the user's password
+    actor.password = hashedPassword;
+    await actor.save();
+
+    res.json({ success: true, message: "Password reset successful" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(401).json({ errors: [{ msg: "Token is not valid" }] });
+  }
+});
+
+
 // @route    POST api/auth
 // @desc     Authenticate user and get token
 // @access   Public
