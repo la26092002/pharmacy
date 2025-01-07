@@ -33,57 +33,57 @@ router.post(
     const { email } = req.body;
 
     try {
-      let actor = await Actor1.findOne({ email:email });
+      let actor = await Actor1.findOne({ email: email });
       if (!actor) {
         return res.status(400).json({ errors: [{ msg: "User does not exist" }] });
       }
 
 
-       // Generate a random 4-digit number
-       const randomNumber = Math.floor(1000 + Math.random() * 9000);
-      
+      // Generate a random 4-digit number
+      const randomNumber = Math.floor(1000 + Math.random() * 9000);
 
-       // Create payload for JWT
-       const payload = {
-         randomNumber,
-         email, // Include email for reference in the token
-       };
- 
-       // Sign the JWT with your secret key
-       const token = jwt.sign(payload, "your_jwt_secret_key", {
-         expiresIn: "1h", // Token expiry time
-       });
- 
-       var nodemailer = require('nodemailer');
-// create reusable transporter object using the default SMTP transport
-const transporter = nodemailer.createTransport({
-  port: 465,               // true for 465, false for other ports
-  host: "smtp.gmail.com",
-     auth: {
+
+      // Create payload for JWT
+      const payload = {
+        randomNumber,
+        email, // Include email for reference in the token
+      };
+
+      // Sign the JWT with your secret key
+      const token = jwt.sign(payload, "your_jwt_secret_key", {
+        expiresIn: "1h", // Token expiry time
+      });
+
+      var nodemailer = require('nodemailer');
+      // create reusable transporter object using the default SMTP transport
+      const transporter = nodemailer.createTransport({
+        port: 465,               // true for 465, false for other ports
+        host: "smtp.gmail.com",
+        auth: {
           user: 'larbibenyakhou.info@gmail.com',
           pass: 'pwji maxd grmy kpvs',
-       },
-  secure: true,
-  });
+        },
+        secure: true,
+      });
 
-  const mailData = {
-    from: 'larbibenyakhou.info@gmail.com',  // sender address
-      to: email,   // list of receivers
-      subject: 'Sending Email from ELSAIDALIYA',
-      text: 'That was easy!',
-      html: `<b>Hey there! </b><br> This is yout code : ${randomNumber}<br/>`,
-    };
+      const mailData = {
+        from: 'larbibenyakhou.info@gmail.com',  // sender address
+        to: email,   // list of receivers
+        subject: 'Sending Email from ELSAIDALIYA',
+        text: 'That was easy!',
+        html: `<b>Hey there! </b><br> This is yout code : ${randomNumber}<br/>`,
+      };
 
-    transporter.sendMail(mailData, function (err, info) {
-      if(err)
-        console.log(err)
-      else
-        console.log(info);
-   });
+      transporter.sendMail(mailData, function (err, info) {
+        if (err)
+          console.log(err)
+        else
+          console.log(info);
+      });
 
-       // Return the token
-       res.json({ token });
-     
+      // Return the token
+      res.json({ token });
+
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server error");
@@ -157,17 +157,17 @@ router.post(
     const { numberPhone, password } = req.body;
 
     try {
-      let actor = await Actor1.findOne({ telephone:numberPhone });
+      let actor = await Actor1.findOne({ telephone: numberPhone });
       if (!actor) {
         return res.status(400).json({ errors: [{ msg: "User does not exist" }] });
       }
-     
+
 
       if (!actor.status) {
         console.log(actor.status)
         return res.status(400).json({ errors: [{ msg: "User does not have access" }] });
       }
-      
+
       const isMatch = await bcrypt.compare(password, actor.password);
       if (!isMatch) {
         return res.status(400).json({ errors: [{ msg: "Incorrect password" }] });
@@ -189,7 +189,7 @@ router.post(
         (err, token) => {
           if (err) throw err;
           res.status(200).json({
-            category:actor.category,
+            category: actor.category,
             token,
             msg: "Log in successful",
             name: actor.name,
@@ -295,7 +295,7 @@ router.post(
 );
 
 // <MenuItem value="Pharmacien">Pharmacien</MenuItem>
-      //<MenuItem value="Fournisseur">Fournisseur</MenuItem>
+//<MenuItem value="Fournisseur">Fournisseur</MenuItem>
 
 // @route    GET api/actors
 // @desc     Fetch all actors with pagination and optional filters for willaya and nom
@@ -307,37 +307,37 @@ router.get('/', async (req, res) => {
 
 
   try {
-      // Build the filter object based on query parameters
-      const filter = {};
-      if (willaya) {
-          filter.willaya = { $regex: willaya, $options: 'i' }; // Case-insensitive search for willaya
-      }
-      if (nom) {
-          filter.nom = { $regex: nom, $options: 'i' }; // Case-insensitive search for nom
-      }
+    // Build the filter object based on query parameters
+    const filter = {};
+    if (willaya) {
+      filter.willaya = { $regex: willaya, $options: 'i' }; // Case-insensitive search for willaya
+    }
+    if (nom) {
+      filter.nom = { $regex: nom, $options: 'i' }; // Case-insensitive search for nom
+    }
     if (category) {
       filter.category = { $regex: category, $options: 'i' }; // Case-insensitive search
     }
 
-      // Fetch the total number of actors matching the filter
-      const totalItems = await Actor1.countDocuments(filter);
+    // Fetch the total number of actors matching the filter
+    const totalItems = await Actor1.countDocuments(filter);
 
-      // Fetch actors with pagination and optional filters
-      const actors = await Actor1.find(filter)
-          .skip(skip)
-          .limit(limit);
+    // Fetch actors with pagination and optional filters
+    const actors = await Actor1.find(filter)
+      .skip(skip)
+      .limit(limit);
 
-      // Send the response with the paginated data
-      res.json({
-          success: true,
-          data: actors,
-          totalItems,
-          totalPages: Math.ceil(totalItems / limit),
-          currentPage: parseInt(page),
-      });
+    // Send the response with the paginated data
+    res.json({
+      success: true,
+      data: actors,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: parseInt(page),
+    });
   } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ error: 'Server Error' });
+    console.error(err.message);
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -349,15 +349,15 @@ router.get('/download', (req, res) => {
 
   // Check if the file exists
   if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'PDF file not found' });
+    return res.status(404).json({ error: 'PDF file not found' });
   }
 
   // Send the file for download
   res.download(filePath, (err) => {
-      if (err) {
-          console.error(err);
-          return res.status(500).json({ error: 'Unable to download the PDF file' });
-      }
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Unable to download the PDF file' });
+    }
   });
 });
 

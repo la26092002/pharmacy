@@ -44,11 +44,8 @@ app.use('/api/product', require('./routes/api/product'));
 app.use('/api/productCota', require('./routes/api/productCota'));
 app.use('/api/offer', require('./routes/api/offre'));
 app.use('/api/admin', require('./routes/api/authAdmin'));
-//app.use('/api/company', require('./routes/api/company'));
-//app.use('/api/admin', require('./routes/api/admin'));
+app.use('/api/contact', require('./routes/api/contact'));
 
-//app.use('/api/consultantsLawyers', require('./routes/api/consultantsLawyers'));
-//consultantsLawyers
 
 
 const PORT = process.env.PORT || 5000;
