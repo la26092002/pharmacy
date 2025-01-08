@@ -186,7 +186,8 @@ router.put('/:id', uploadProduct.single('file'), [
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name } = req.body;
+    const { name,  } = req.body;
+    
     const productId = req.params.id;
 
     try {
@@ -229,6 +230,36 @@ router.put('/:id', uploadProduct.single('file'), [
     }
 });
 
+
+
+
+
+// PUT: Toggle the `delete` field of a product by ID
+router.put('/toggle-delete/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+
+        // Find the product by ID
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ msg: "Product not found" });
+        }
+
+        // Toggle the `delete` field
+        product.delete = !product.delete;
+
+        // Save the updated product
+        const updatedProduct = await product.save();
+
+        res.json({ msg: "Product `delete` field toggled", product: updatedProduct });
+    } catch (err) {
+        console.error(err.message);
+        if (err.kind === 'ObjectId') {
+            return res.status(404).json({ msg: "Product not found" });
+        }
+        res.status(500).send('Server Error');
+    }
+});
 
 
 module.exports = router;

@@ -12,6 +12,10 @@ const ProductSchema = new mongoose.Schema({
     actor: {
         type: Schema.Types.ObjectId,
         ref: 'actor'
+    }, 
+    delete : {
+        type: Boolean,
+        default: false,
     },
     date: {
         type: Date,
