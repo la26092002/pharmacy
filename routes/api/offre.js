@@ -93,7 +93,7 @@ router.get('/', async (req, res) => {
         }
 
         // If the `date` query is true, filter for the last 24 hours
-        if (date === 'true') {
+        if (date == 'true') {
             const now = new Date();
             const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
             filter.date = { $gte: last24Hours, $lte: now };
