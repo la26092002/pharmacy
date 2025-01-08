@@ -48,7 +48,7 @@ router.post('/', uploadOffre.single('file'), [
 
         const existingOffre = await Offre.findOne({
             actor,
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            date: { $gte: startOfDay, $lte: endOfDay }
         });
 
         if (existingOffre) {
