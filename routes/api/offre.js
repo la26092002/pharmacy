@@ -104,7 +104,7 @@ router.get('/', async (req, res) => {
 
         // Fetch offres based on the filter, pagination, and population
         const offres = await Offre.find(filter)
-            .populate('actor', 'nom prenom email category') // Populate specific fields
+            .populate('actor', 'nom prenom email category telephone') // Populate specific fields
             .skip(skip)
             .limit(limit);
 
@@ -141,7 +141,7 @@ router.get('/download', (req, res) => {
 // GET: Fetch a single offre by ID
 router.get('/:id', async (req, res) => {
     try {
-        const offre = await Offre.findById(req.params.id).populate('actor', 'nom prenom email category');
+        const offre = await Offre.findById(req.params.id).populate('actor', 'nom prenom email telephone category ');
         if (!offre) {
             return res.status(404).json({ msg: 'Offre not found' });
         }

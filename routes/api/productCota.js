@@ -98,7 +98,7 @@ router.get('/', async (req, res) => {
   
         // Fetch products based on the filter, pagination, and population
         const products = await Product.find(filter)
-            .populate('actor', 'nom prenom email category') // Populate specific fields
+            .populate('actor', 'nom prenom email category telephone') // Populate specific fields
             .skip(skip)
             .limit(limit);
   
@@ -137,7 +137,7 @@ router.get('/download', (req, res) => {
 // GET: Fetch a product by ID
 router.get('/:id', async (req, res) => {
   try {
-      const product = await Product.findById(req.params.id).populate('actor', 'nom prenom email category');
+      const product = await Product.findById(req.params.id).populate('actor', 'nom prenom email category telephone');
       if (!product) {
           return res.status(404).json({ msg: 'Product not found' });
       }
