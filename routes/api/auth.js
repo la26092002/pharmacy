@@ -390,6 +390,22 @@ router.put('/update/:id', async (req, res) => {
       return res.status(404).json({ msg: 'Actor not found' });
     }
 
+    // Check if the provided phone number already exists (excluding the current actor)
+    if (telephone && telephone !== actor.telephone) {
+      const existingPhone = await Actor1.findOne({ telephone });
+      if (existingPhone) {
+        return res.status(400).json({ msg: 'Phone number already exists' });
+      }
+    }
+
+    // Check if the provided email already exists (excluding the current actor)
+    if (email && email !== actor.email) {
+      const existingEmail = await Actor1.findOne({ email });
+      if (existingEmail) {
+        return res.status(400).json({ msg: 'Email already exists' });
+      }
+    }
+
     // Conditionally update the actor's fields if they are provided in the request body
     if (nom) actor.nom = nom;
     if (prenom) actor.prenom = prenom;
@@ -418,6 +434,7 @@ router.put('/update/:id', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 
 
 // @route    PUT api/auth/update-pdf/:id
