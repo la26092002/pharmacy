@@ -38,23 +38,6 @@ router.post('/', uploadCotaProduct.single('file'), [
             return res.status(403).json({ errors: [{ msg: "Actor does not exist" }] });
         }
 
-        // Check if a product was already added today by this actor
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const existingProduct = await Product.findOne({
-            actor,
-            date: { $gte: startOfDay, $lte: endOfDay }
-        });
-
-        if (existingProduct) {
-            return res.status(401).json({ error: "You can only add one product per day." });
-        }
-
-        
         // Create and save the new product
         let product = new Product({
             name, 
