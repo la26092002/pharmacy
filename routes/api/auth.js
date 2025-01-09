@@ -516,4 +516,42 @@ router.get('/Data/:id', async (req, res) => {
 });
 
 
+
+
+// @route    PUT api/auth/update-subscribe/:id
+// @desc     Update the subscribes date for a specific actor
+// @access   Private
+router.put('/update-subscribe/:id', async (req, res) => {
+  const { id } = req.params; // Get actor ID from the URL parameter
+  const { subscribes } = req.body; // Get the new subscription date from the request body
+
+  // Validate that a date is provided
+  if (!subscribes) {
+    return res.status(400).json({ msg: 'Subscribes date is required' });
+  }
+
+  try {
+    // Find the actor by ID
+    let actor = await Actor1.findById(id);
+
+    // If actor not found
+    if (!actor) {
+      return res.status(404).json({ msg: 'Actor not found' });
+    }
+
+    // Update the subscribes field
+    actor.subscribes = new Date(subscribes);
+
+    // Save the updated actor
+    await actor.save();
+
+    // Respond with success and updated actor data
+    res.json({ msg: 'Subscribes date updated successfully', actor });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
 module.exports = router;

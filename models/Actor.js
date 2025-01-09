@@ -39,22 +39,14 @@ const ActorSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    subscribes: [
-        {
-            name: {
-                type: String,
-                require: true
-            },
-            from: {
-                type: Date,
-                required: true
-            },
-            to: {
-                type: Date,
-                required: true
-            },
+    subscribes: {
+        type: Date,
+        default: () => {
+            const now = new Date();
+            now.setDate(now.getDate() + 7);
+            return now;
         }
-    ],
+    },
     date: {
         type: Date,
         default: Date.now
