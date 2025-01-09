@@ -420,6 +420,83 @@ router.put('/update/:id', async (req, res) => {
 });
 
 
+// @route    PUT api/auth/update-pdf/:id
+// @desc     Update the PDF for a specific actor
+// @access   Private
+router.put('/update-pdf/:id', upload.single('file'), async (req, res) => {
+  const { id } = req.params;  // Get actor ID from URL parameters
+
+  // Check if file is uploaded
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+
+  const uploadedFile = req.file;
+  const fileName = uploadedFile.filename; // Generated filename
+  const filePath = path.join('authUploads', fileName); // Full file path
+  const fileData = fs.readFileSync(filePath); // Read the file
+
+  // Processing the file (PDF or converting)
+  if (uploadedFile.mimetype === 'application/pdf') {
+    await processPDF(filePath, res); // Process PDF directly
+  } else {
+    const convertedFilePath = await convertToPDF(filePath); // Convert file to PDF
+    await processPDF(convertedFilePath, res); // Process converted PDF
+  }
+
+
+
+  const dataPdf = fileName;
+
+  try {
+    // Find the actor by ID
+    let actor = await Actor1.findById(id);
+
+    // If actor not found
+    if (!actor) {
+      return res.status(404).json({ msg: 'Actor not found' });
+    }
+
+    // Update the actor's PDF data field with the new file name
+    actor.dataPdf = dataPdf;
+
+    // Save the updated actor information
+    const Actorr = await actor.save();
+
+    // Respond with the updated actor data
+    res.json({ msg: 'PDF updated successfully', _id : Actorr.id });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
+
+// @route    GET /api/auth/Data/:id
+// @desc     Get actor's data by ID
+// @access   Public
+router.get('/Data/:id', async (req, res) => {
+  const { id } = req.params;  // Get actor ID from the URL parameter
+
+  try {
+    // Find the actor by ID and exclude the password field
+    let actor = await Actor1.findById(id).select('-password');
+    if (!actor) {
+      return res.status(404).json({ msg: 'Actor not found' });
+    }
+
+    // Return the actor's data
+    res.json({
+      success: true,
+      actor
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
 
 
 module.exports = router;
