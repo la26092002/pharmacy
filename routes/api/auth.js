@@ -168,6 +168,12 @@ router.post(
         return res.status(400).json({ errors: [{ msg: "User does not have access" }] });
       }
 
+      // Check if the subscription is still valid
+      const now = new Date();
+      if (new Date(actor.subscribes) < now) {
+        return res.status(400).json({ errors: [{ msg: "Subscription has expired. Please renew your subscription." }] });
+      }
+
       const isMatch = await bcrypt.compare(password, actor.password);
       if (!isMatch) {
         return res.status(400).json({ errors: [{ msg: "Incorrect password" }] });
