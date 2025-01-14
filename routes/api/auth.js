@@ -8,7 +8,7 @@ const Actor1 = require("../../models/Actor");
 
 const fs = require('fs');
 const path = require('path');
-const { upload, processFileData, processPDF, convertToPDF } = require('../../Functions/PdfFunctions');
+const { uploadImage, upload, processFileData, processPDF, convertToPDF } = require('../../Functions/PdfFunctions');
 
 
 
@@ -232,27 +232,25 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // Ensure a file was uploaded
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const uploadedFile = req.file;
-    const fileName = uploadedFile.filename; // Generated filename
-    const filePath = path.join('authUploads', fileName); // Full file path
-    const fileData = fs.readFileSync(filePath); // Read the file
 
-    // Processing the file (PDF or converting)
-    if (uploadedFile.mimetype === 'application/pdf') {
-      await processPDF(filePath, res); // Process PDF directly
-    } else {
-      const convertedFilePath = await convertToPDF(filePath); // Convert file to PDF
-      await processPDF(convertedFilePath, res); // Process converted PDF
+    // Validate that the uploaded file is an image
+    if (!uploadedFile.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: 'Uploaded file is not an image' });
     }
 
+    const fileName = uploadedFile.filename;
+    // Optionally, you can process or manipulate the image here if needed.
+    // For now, we'll simply store the filename.
 
     const { nom, prenom, telephone, email, willaya, category, password } = req.body;
+    const imageFileName = fileName; // Store the image filename
 
-    const dataPdf = fileName;
     try {
       let existingUserByPhone = await Actor1.findOne({ telephone });
       let existingUserByEmail = await Actor1.findOne({ email });
@@ -261,8 +259,16 @@ router.post(
         return res.status(400).json({ errors: [{ msg: "User already exists" }] });
       }
 
+      // Create a new actor with image file reference instead of PDF
       let actor = new Actor1({
-        nom, prenom, telephone, email, willaya, category, dataPdf, password
+        nom,
+        prenom,
+        telephone,
+        email,
+        willaya,
+        category,
+        dataPdf: imageFileName,  // You might consider renaming this field to something like "profileImage"
+        password
       });
 
       const salt = await bcrypt.genSalt(10);
@@ -277,9 +283,6 @@ router.post(
           status: actor.status
         }
       };
-
-
-      //const statusCode = actor.status ? 200 : 403;
 
       jwt.sign(
         payload,
@@ -299,6 +302,7 @@ router.post(
     }
   }
 );
+
 
 // <MenuItem value="Pharmacien">Pharmacien</MenuItem>
 //<MenuItem value="Fournisseur">Fournisseur</MenuItem>
@@ -372,128 +376,117 @@ router.get('/download', (req, res) => {
 // @route    PUT api/actors/update/:id
 // @desc     Update selected actor's information
 // @access   Private
-router.put('/update/:id', async (req, res) => {
-  const { id } = req.params; // Get actor ID from URL parameters
-  const {
-    nom,
-    prenom,
-    telephone,
-    email,
-    willaya,
-    category,
-    dataPdf,
-    password,
-    status,
-    subscribes,
-  } = req.body;
+// Update actor's information including image file update
+router.put(
+  '/update/:id', // Middleware to handle single file upload with field name 'file'
+  async (req, res) => {
+    const { id } = req.params;
+    const {
+      nom,
+      prenom,
+      telephone,
+      email,
+      willaya,
+      category,
+      password,
+      status,
+      subscribes,
+      // Notice we're not destructuring dataPdf from req.body
+    } = req.body;
 
-  try {
-    // Find the actor by ID
-    let actor = await Actor1.findById(id);
-
-    // If actor not found
-    if (!actor) {
-      return res.status(404).json({ msg: 'Actor not found' });
-    }
-
-    // Check if the provided phone number already exists (excluding the current actor)
-    if (telephone && telephone !== actor.telephone) {
-      const existingPhone = await Actor1.findOne({ telephone });
-      if (existingPhone) {
-        return res.status(400).json({ msg: 'Phone number already exists' });
+    try {
+      // Find the actor by ID
+      let actor = await Actor1.findById(id);
+      if (!actor) {
+        return res.status(404).json({ msg: 'Actor not found' });
       }
-    }
 
-    // Check if the provided email already exists (excluding the current actor)
-    if (email && email !== actor.email) {
-      const existingEmail = await Actor1.findOne({ email });
-      if (existingEmail) {
-        return res.status(400).json({ msg: 'Email already exists' });
+      // Check for duplicate phone or email conditions (if updating those fields)
+      if (telephone && telephone !== actor.telephone) {
+        const existingPhone = await Actor1.findOne({ telephone });
+        if (existingPhone) return res.status(400).json({ msg: 'Phone number already exists' });
       }
+      if (email && email !== actor.email) {
+        const existingEmail = await Actor1.findOne({ email });
+        if (existingEmail) return res.status(400).json({ msg: 'Email already exists' });
+      }
+
+      // Update fields if provided
+      if (nom) actor.nom = nom;
+      if (prenom) actor.prenom = prenom;
+      if (telephone) actor.telephone = telephone;
+      if (email) actor.email = email;
+      if (willaya) actor.willaya = willaya;
+      if (category) actor.category = category;
+
+      
+      // If no file is uploaded, preserve the existing dataPdf
+
+      // Update password if provided
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        actor.password = await bcrypt.hash(password, salt);
+      }
+
+      if (status !== undefined) actor.status = status;
+      if (subscribes) actor.subscribes = subscribes;
+
+      // Save updated actor
+      await actor.save();
+
+      res.json({ msg: 'Actor updated successfully', actor });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+
+router.put(
+  '/update-image/:id',
+  upload.single('file'), 
+  async (req, res) => {
+    const { id } = req.params;
+
+    // Check if a file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ msg: 'No file uploaded' });
     }
 
-    // Conditionally update the actor's fields if they are provided in the request body
-    if (nom) actor.nom = nom;
-    if (prenom) actor.prenom = prenom;
-    if (telephone) actor.telephone = telephone;
-    if (email) actor.email = email;
-    if (willaya) actor.willaya = willaya;
-    if (category) actor.category = category;
-    if (dataPdf) actor.dataPdf = dataPdf;
-
-    // If password is provided, hash and update it
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      actor.password = await bcrypt.hash(password, salt);
+    // Validate that the uploaded file is an image
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ msg: 'Uploaded file is not an image' });
     }
 
-    if (status !== undefined) actor.status = status; // Update status only if provided
-    if (subscribes) actor.subscribes = subscribes;
-
-    // Save the updated actor
-    await actor.save();
-
-    // Send the updated actor data as a response
-    res.json({ msg: 'Actor updated successfully', actor });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-
-
-// @route    PUT api/auth/update-pdf/:id
-// @desc     Update the PDF for a specific actor
-// @access   Private
-router.put('/update-pdf/:id', upload.single('file'), async (req, res) => {
-  const { id } = req.params;  // Get actor ID from URL parameters
-
-  // Check if file is uploaded
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-
-  const uploadedFile = req.file;
-  const fileName = uploadedFile.filename; // Generated filename
-  const filePath = path.join('authUploads', fileName); // Full file path
-  const fileData = fs.readFileSync(filePath); // Read the file
-
-  // Processing the file (PDF or converting)
-  if (uploadedFile.mimetype === 'application/pdf') {
-    await processPDF(filePath, res); // Process PDF directly
-  } else {
-    const convertedFilePath = await convertToPDF(filePath); // Convert file to PDF
-    await processPDF(convertedFilePath, res); // Process converted PDF
-  }
-
-
-
-  const dataPdf = fileName;
-
-  try {
-    // Find the actor by ID
-    let actor = await Actor1.findById(id);
-
-    // If actor not found
-    if (!actor) {
-      return res.status(404).json({ msg: 'Actor not found' });
+    
+    if (!req.file.filename) {
+      return res.status(400).json({ msg: 'No filename uploaded' });
     }
+    try {
+      // Use findByIdAndUpdate with $set to update only the dataPdf field
+      const updatedActor = await Actor1.findByIdAndUpdate(
+        id,
+        { $set: { dataPdf: req.file.filename} },
+        { new: true }  // Return the updated document
+      );
 
-    // Update the actor's PDF data field with the new file name
-    actor.dataPdf = dataPdf;
+      if (!updatedActor) {
+        return res.status(404).json({ msg: 'Actor not found' });
+      }
 
-    // Save the updated actor information
-    const Actorr = await actor.save();
-
-    // Respond with the updated actor data
-    res.json({ msg: 'PDF updated successfully', _id : Actorr.id });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+      res.json({ 
+        msg: 'Image updated successfully', 
+        dataPdf: updatedActor.dataPdf 
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
   }
-});
+);
+
+
 
 
 

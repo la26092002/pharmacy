@@ -137,6 +137,38 @@ const storage = multer.diskStorage({
   }
 
 
+
+
+
+
+
+  //register part accept images 
+
+
+  const storageImage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'authUploads/');
+    },
+    filename: (req, file, cb) => {
+      const originalName = path.parse(file.originalname).name;
+      const timestamp = Date.now();
+      const extension = path.extname(file.originalname);
+      const newFilename = `${timestamp}_${originalName}${extension}`;
+      cb(null, newFilename);
+    },
+  });
+  
+  const imageFileFilterImage = (req, file, cb) => {
+    // Accept images only
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  };
+  
+  const uploadImage = multer({ storageImage, fileFilter: imageFileFilterImage });
+  
+
   // Export the functions and constants
 module.exports = {
     upload,
@@ -146,4 +178,5 @@ module.exports = {
     processFileData,
     processPDF,
     convertToPDF,
+    uploadImage
   };

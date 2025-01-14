@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 //const config = require('config');
 require('dotenv').config();
 ////mongoURI="mongodb+srv://larbi26:yTpyUiVqGi2vRj98@cluster0.ppobd.mongodb.net/pharmacy?retryWrites=true&w=majority&appName=Cluster0"
-const db = "mongodb+srv://larbi26:yTpyUiVqGi2vRj98@cluster0.ppobd.mongodb.net/pharmacyryyyyyiy?retryWrites=true&w=majority&appName=Cluster0";
+// const db = "mongodb://localhost:27017/larbi";
+const db = "mongodb://127.0.0.1:27017/larbi";
+
 const connectDB = async () => {
     try {
         await mongoose.connect(db, {
@@ -10,6 +12,7 @@ const connectDB = async () => {
             useUnifiedTopology: true,
             connectTimeoutMS: 30000, // Increase timeout to 30 seconds
           })
+          mongoose.set('strictQuery', false);
 
         //console.log("Mongo URI:", db);
 
