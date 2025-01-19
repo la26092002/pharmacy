@@ -33,7 +33,7 @@ router.post('/', uploadCotaProduct.single('file'), [
 
     try {
         // Check if the actor exists
-        let existingActor = await Actor1.findOne({ id: actor });
+        let existingActor = await Actor1.findOne({ _id: actor });
         if (!existingActor) {
             return res.status(403).json({ errors: [{ msg: "Actor does not exist" }] });
         }
@@ -66,7 +66,7 @@ router.get('/', async (req, res) => {
         const filter = {};
   
         // If the date query is true, filter for the last 24 hours
-        if (date === 'true') {
+        if (date == 'true') {
             const now = new Date();
             const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
             filter.date = { $gte: last24Hours, $lte: now };

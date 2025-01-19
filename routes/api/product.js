@@ -3,11 +3,143 @@ const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const Product = require("../../models/Product");
 const Actor1 = require("../../models/Actor");
-const { uploadProduct, processPDF, convertToPDF } = require('../../Functions/PdfFunctions');
+const { uploadProduct, processPDF, convertToPDF,processPDF2 } = require('../../Functions/PdfFunctions');
 const path = require('path');
 const fs = require('fs');
 
-require('dotenv').config();
+require('dotenv').config();router.get('/search-in-pdf', async (req, res) => {
+    const { page = 0, size = 5, searchTerms, productName, date, id } = req.query; // Defaults for pagination and additional filters
+    const limit = parseInt(size);
+    const skip = parseInt(page) * limit;
+
+    try {
+        // Build the filter object
+        const filter = {};
+        if (productName) {
+            filter.name = { $regex: productName, $options: 'i' }; // Case-insensitive search
+        }
+
+        // If the date query is true, filter for the last 24 hours
+        if (date == 'true') {
+            const now = new Date();
+            const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            filter.date = { $gte: last24Hours, $lte: now };
+        }
+
+        if (id) {
+            filter.actor = id; // Filter by actor ID
+        }
+
+        let matchingProducts = [];
+        let totalItems;
+
+        if (searchTerms) {
+            // Convert the comma-separated search terms into an array
+            const searchTermsArray = searchTerms.split(',').map(term => term.trim());
+
+            // Fetch all products based on the filter
+            const products = await Product.find(filter).populate('actor', 'nom prenom email category');
+
+            // Loop through each product to search in the PDF content
+            for (const product of products) {
+                const filePath = path.join('pruductUploads', product.dataPdf);
+
+                if (fs.existsSync(filePath)) {
+                    // Extract text from the PDF and search for the terms
+                    const { wordCounts } = await processPDF2(filePath, searchTermsArray, res);
+
+                    // If any of the search terms are found, add the product to the matching list
+                    if (Object.keys(wordCounts).length > 0) {
+                        matchingProducts.push({
+                            ...product.toObject(), // Convert Mongoose document to plain object
+                            wordCounts, // Include the word counts for reference
+                        });
+                    }
+                }
+            }
+
+            totalItems = matchingProducts.length;
+        } else {
+            // If no searchTerms are provided, fetch products like the '/' API
+            totalItems = await Product.countDocuments(filter);
+
+            const products = await Product.find(filter)
+                .populate('actor', 'nom prenom email category') // Populate specific fields
+                .skip(skip)
+                .limit(limit);
+
+            matchingProducts = products.map(product => product.toObject()); // Convert Mongoose documents to plain objects
+        }
+
+        // Apply pagination to the matching products
+        const paginatedProducts = matchingProducts.slice(skip, skip + limit);
+
+        // Return the paginated matching products
+        res.json({
+            success: true,
+            data: paginatedProducts,
+            totalItems,
+            totalPages: Math.ceil(totalItems / limit),
+            currentPage: parseInt(page),
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+/*
+
+router.get('/search-in-pdf', async (req, res) => {
+    const { searchTerms } = req.query; // Get the search terms from the query parameters
+
+    if (!searchTerms) {
+        return res.status(400).json({ error: 'Search terms are required' });
+    }
+
+    // Convert the comma-separated search terms into an array
+    const searchTermsArray = searchTerms.split(',').map(term => term.trim());
+
+    try {
+        // Fetch all products
+        const products = await Product.find().populate('actor', 'nom prenom email category');
+
+        // Array to hold products that match the search terms
+        const matchingProducts = [];
+
+        // Loop through each product to search in the PDF content
+        for (const product of products) {
+            const filePath = path.join('pruductUploads', product.dataPdf);
+
+            if (fs.existsSync(filePath)) {
+                // Extract text from the PDF and search for the terms
+                const { wordCounts } = await processPDF2(filePath, searchTermsArray, res);
+
+                // If any of the search terms are found, add the product to the matching list
+                if (Object.keys(wordCounts).length > 0) {
+                    matchingProducts.push({
+                        product,
+                        wordCounts, // Include the word counts for reference
+                    });
+                }
+            }
+        }
+
+        // Return the matching products
+        res.json({
+            success: true,
+            data: matchingProducts,
+            totalItems: matchingProducts.length,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+*/
+
+
+
 
 router.post('/', uploadProduct.single('file'), [
     check("name", "name is required").not().isEmpty(),
@@ -132,7 +264,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-module.exports = router;
+
 
   
 
@@ -260,6 +392,11 @@ router.put('/toggle-delete/:id', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+
+
+
+
 
 
 module.exports = router;

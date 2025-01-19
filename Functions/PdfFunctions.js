@@ -111,6 +111,34 @@ const storage = multer.diskStorage({
       // Clean up - delete the uploaded file and PDF file if needed
     }
   }
+
+
+  // Function to process the PDF and count word occurrences
+async function processPDF2(pdfFilePath, searchTerms, res) {
+  try {
+      // Parse the PDF content
+      const pdfBuffer = fs.readFileSync(pdfFilePath);
+      const data = await PDFParser(pdfBuffer);
+      const pdfText = data.text;
+
+      // Define the words to search and their initial count
+      let wordCounts = {};
+
+      // Count the occurrences of each search word
+      searchTerms.forEach((word) => {
+          const regex = new RegExp(word, 'gi'); // Case-insensitive search
+          const count = (pdfText.match(regex) || []).length;
+          wordCounts[word] = count;
+      });
+
+      // Return the word counts and the extracted text
+      wordCounts = Object.fromEntries(Object.entries(wordCounts).filter(([key, value]) => value !== 0));
+      return { wordCounts, pdfText };
+  } catch (error) {
+      console.error('An error occurred while processing the PDF:', error);
+      res.status(500).json({ error: 'Failed to process the PDF' });
+  }
+}
   
   // Helper function to convert files to PDF using external converter
   async function convertToPDF(filePath) {
@@ -178,5 +206,6 @@ module.exports = {
     processFileData,
     processPDF,
     convertToPDF,
-    uploadImage
+    uploadImage,
+    processPDF2
   };
