@@ -378,7 +378,7 @@ router.get('/download', (req, res) => {
 // @route    PUT /api/auth/update/:id
 // @desc     Update actor's information
 // @access   Private
-router.put('/update/:id', authMiddleware, async (req, res) => {
+router.put('/update/:id', async (req, res) => {
   const { id } = req.params;
   const { nom, prenom, telephone, email, willaya, category, nomSociete } = req.body;
 
