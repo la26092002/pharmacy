@@ -220,7 +220,6 @@ router.post(
   "/register", upload.single('file'),
   [
     check("nom", "Name is required").not().isEmpty(),
-   
     check("willaya", "willaya is required").not().isEmpty(),
     check("category", "category is required").not().isEmpty(),
     check("telephone", "Please include a valid phone number").isMobilePhone(),
@@ -246,11 +245,13 @@ router.post(
     }
 
     const fileName = uploadedFile.filename;
-    // Optionally, you can process or manipulate the image here if needed.
-    // For now, we'll simply store the filename.
 
-    const { nom, prenom, telephone, email, willaya, category, password } = req.body;
+    let { nom, prenom, telephone, email, willaya, category, password } = req.body;
     const imageFileName = fileName; // Store the image filename
+
+    if (!prenom) {
+      prenom = " "; // Now this is allowed
+    }
 
     try {
       let existingUserByPhone = await Actor1.findOne({ telephone });
@@ -260,9 +261,6 @@ router.post(
         return res.status(400).json({ errors: [{ msg: "User already exists" }] });
       }
 
-      if (!prenom) {
-        prenom = " ";
-      }
       // Create a new actor with image file reference instead of PDF
       let actor = new Actor1({
         nom,
