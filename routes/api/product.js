@@ -375,13 +375,10 @@ router.put('/toggle-delete/:id', async (req, res) => {
 
         // Find the product by ID
         const product = await Product.findByIdAndDelete(productId);
-        if (!product) {
-            return res.status(404).json({ msg: "Product not found" });
-        }
+        
 
 
-        // Save the updated product
-        const updatedProduct = await product.save();
+       
 
         res.json({ msg: "Product `delete` field toggled", product: updatedProduct });
     } catch (err) {
