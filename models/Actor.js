@@ -45,7 +45,7 @@ const ActorSchema = new mongoose.Schema({
     },
     nomSociete: { // New Field
         type: String,
-        required: true
+        required: false
     },
     subscribes: {
         type: Date,
