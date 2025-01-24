@@ -374,6 +374,24 @@ router.get('/download', (req, res) => {
     }
   });
 });
+// Download PDF for actor's profile
+router.get('/downloadlogos', (req, res) => {
+  const fileId = req.query.file;  // Get fileId from the query parameter
+  const filePath = path.join('uploads/logos', fileId);  // Build the path using fileId
+
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'PDF file not found' });
+  }
+
+  // Send the file for download
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Unable to download the PDF file' });
+    }
+  });
+});
 
 
 

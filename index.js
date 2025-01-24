@@ -1,12 +1,11 @@
 const express = require('express');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const cors = require('cors')
+const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const compression = require('compression')
-
-
+const compression = require('compression');
+const path = require('path'); // Import the path module
 
 const app = express();
 dotenv.config();
@@ -22,17 +21,15 @@ app.use(express.json());
 
 app.use(helmet());
 
+app.use(compression());
 
-app.use(compression())
-
-//rateLimit
+// Rate Limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 
 app.use(limiter);
-
 
 app.get('/hello', (req, res) => {
   res.send('Hello World');
@@ -46,6 +43,8 @@ app.use('/api/offer', require('./routes/api/offre'));
 app.use('/api/admin', require('./routes/api/authAdmin'));
 app.use('/api/contact', require('./routes/api/contact'));
 
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 const PORT = process.env.PORT || 5000;

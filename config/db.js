@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 ////mongoURI="mongodb+srv://larbi26:yTpyUiVqGi2vRj98@cluster0.ppobd.mongodb.net/pharmacy?retryWrites=true&w=majority&appName=Cluster0"
 // const db = "mongodb://localhost:27017/larbi";
-const db = "mongodb+srv://larbi26:yTpyUiVqGi2vRj98@cluster0.ppobd.mongodb.net/pharrdrmmaccyy?retryWrites=true&w=majority&appName=Cluster0";
+const db = "mongodb+srv://larbi26:yTpyUiVqGi2vRj98@cluster0.ppobd.mongodb.net/pharrdrmmacccyy?retryWrites=true&w=majority&appName=Cluster0";
 
 const connectDB = async () => {
     try {
