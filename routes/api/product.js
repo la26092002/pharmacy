@@ -380,7 +380,7 @@ router.put('/toggle-delete/:id', async (req, res) => {
 
        
 
-        res.json({ msg: "Product `delete` field toggled", product: updatedProduct });
+        res.json({ msg: "Product `delete` field toggled" });
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
