@@ -9,6 +9,7 @@ const Actor1 = require("../../models/Actor");
 const fs = require('fs');
 const path = require('path');
 const { uploadImage, upload, processFileData, processPDF, convertToPDF } = require('../../Functions/PdfFunctions');
+const multer = require('multer');
 
 
 
