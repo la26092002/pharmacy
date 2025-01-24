@@ -39,6 +39,14 @@ const ActorSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    logo: { // New Field
+        type: String,
+        required: false // Make it required if necessary
+    },
+    nomSociete: { // New Field
+        type: String,
+        required: true
+    },
     subscribes: {
         type: Date,
         default: () => {

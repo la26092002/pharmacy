@@ -375,75 +375,36 @@ router.get('/download', (req, res) => {
 });
 
 
-
-// @route    PUT api/actors/update/:id
-// @desc     Update selected actor's information
+// @route    PUT /api/auth/update/:id
+// @desc     Update actor's information
 // @access   Private
-// Update actor's information including image file update
-router.put(
-  '/update/:id', // Middleware to handle single file upload with field name 'file'
-  async (req, res) => {
-    const { id } = req.params;
-    const {
-      nom,
-      prenom,
-      telephone,
-      email,
-      willaya,
-      category,
-      password,
-      status,
-      subscribes,
-      // Notice we're not destructuring dataPdf from req.body
-    } = req.body;
+router.put('/update/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { nom, prenom, telephone, email, willaya, category, nomSociete } = req.body;
 
-    try {
-      // Find the actor by ID
+  try {
       let actor = await Actor1.findById(id);
       if (!actor) {
-        return res.status(404).json({ msg: 'Actor not found' });
+          return res.status(404).json({ msg: 'Actor not found' });
       }
 
-      // Check for duplicate phone or email conditions (if updating those fields)
-      if (telephone && telephone !== actor.telephone) {
-        const existingPhone = await Actor1.findOne({ telephone });
-        if (existingPhone) return res.status(400).json({ msg: 'Phone number already exists' });
-      }
-      if (email && email !== actor.email) {
-        const existingEmail = await Actor1.findOne({ email });
-        if (existingEmail) return res.status(400).json({ msg: 'Email already exists' });
-      }
+      actor.nom = nom;
+      actor.prenom = prenom;
+      actor.telephone = telephone;
+      actor.email = email;
+      actor.willaya = willaya;
+      actor.category = category;
+      actor.nomSociete = nomSociete;
 
-      // Update fields if provided
-      if (nom) actor.nom = nom;
-      if (prenom) actor.prenom = prenom;
-      if (telephone) actor.telephone = telephone;
-      if (email) actor.email = email;
-      if (willaya) actor.willaya = willaya;
-      if (category) actor.category = category;
-
-      
-      // If no file is uploaded, preserve the existing dataPdf
-
-      // Update password if provided
-      if (password) {
-        const salt = await bcrypt.genSalt(10);
-        actor.password = await bcrypt.hash(password, salt);
-      }
-
-      if (status !== undefined) actor.status = status;
-      if (subscribes) actor.subscribes = subscribes;
-
-      // Save updated actor
       await actor.save();
 
-      res.json({ msg: 'Actor updated successfully', actor });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
+      res.json({ msg: 'Actor updated successfully' });
+  } catch (error) {
+      console.error('Error updating actor:', error);
+      res.status(500).json({ msg: 'Server error' });
   }
-);
+});
+
 
 
 router.put(
@@ -555,5 +516,47 @@ router.put('/update-subscribe/:id', async (req, res) => {
   }
 });
 
+
+
+// Configure multer storage for logos
+const storagedddd = multer.diskStorage({
+  destination: function(req, file, cb) {
+      cb(null, 'uploads/logos'); // Ensure this directory exists
+  },
+  filename: function(req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const uploadddd = multer({ storage: storagedddd });
+
+// @route    PUT /api/auth/update-logo/:id
+// @desc     Update actor's logo image
+// @access   Private
+router.put('/update-logo/:id', uploadddd.single('file'), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      let actor = await Actor1.findById(id);
+      if (!actor) {
+          return res.status(404).json({ error: 'Actor not found' });
+      }
+
+      if (!req.file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Update the logo field with the filename
+      actor.logo = req.file.filename;
+
+      await actor.save();
+
+      res.json({ success: true, logo: actor.logo });
+  } catch (error) {
+      console.error('Error updating logo:', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+});
 
 module.exports = router;
