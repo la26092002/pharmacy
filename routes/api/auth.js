@@ -9,7 +9,6 @@ const Actor1 = require("../../models/Actor");
 const fs = require('fs');
 const path = require('path');
 const { uploadImage, upload, processFileData, processPDF, convertToPDF } = require('../../Functions/PdfFunctions');
-const multer = require('multer');
 
 
 
@@ -376,35 +375,81 @@ router.get('/download', (req, res) => {
 });
 
 
-// @route    PUT /api/auth/update/:id
-// @desc     Update actor's information
-// @access   Private
-router.put('/update/:id', async (req, res) => {
-  const { id } = req.params;
-  const { nom, prenom, telephone, email, willaya, category, nomSociete } = req.body;
 
-  try {
+
+// @route    PUT api/actors/update/:id
+// @desc     Update selected actor's information
+// @access   Private
+// Update actor's information including image file update
+router.put(
+  '/update/:id', // Middleware to handle single file upload with field name 'file'
+  async (req, res) => {
+    const { id } = req.params;
+    const {
+      nom,
+      prenom,
+      telephone,
+      email,
+      willaya,
+      category,
+      password,
+      status,
+      subscribes, 
+      nomSociete
+      // Notice we're not destructuring dataPdf from req.body
+    } = req.body;
+
+    try {
+      // Find the actor by ID
       let actor = await Actor1.findById(id);
       if (!actor) {
-          return res.status(404).json({ msg: 'Actor not found' });
+        return res.status(404).json({ msg: 'Actor not found' });
       }
 
-      actor.nom = nom;
-      actor.prenom = prenom;
-      actor.telephone = telephone;
-      actor.email = email;
-      actor.willaya = willaya;
-      actor.category = category;
-      actor.nomSociete = nomSociete;
+      // Check for duplicate phone or email conditions (if updating those fields)
+      if (telephone && telephone !== actor.telephone) {
+        const existingPhone = await Actor1.findOne({ telephone });
+        if (existingPhone) return res.status(400).json({ msg: 'Phone number already exists' });
+      }
+      if (email && email !== actor.email) {
+        const existingEmail = await Actor1.findOne({ email });
+        if (existingEmail) return res.status(400).json({ msg: 'Email already exists' });
+      }
 
+      // Update fields if provided
+      if (nom) actor.nom = nom;
+      if (prenom) actor.prenom = prenom;
+      if (telephone) actor.telephone = telephone;
+      if (email) actor.email = email;
+      if (willaya) actor.willaya = willaya;
+      if (category) actor.category = category;
+      if (nomSociete) actor.nomSociete = nomSociete;
+      
+
+      
+      // If no file is uploaded, preserve the existing dataPdf
+
+      // Update password if provided
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        actor.password = await bcrypt.hash(password, salt);
+      }
+
+      if (status !== undefined) actor.status = status;
+      if (subscribes) actor.subscribes = subscribes;
+
+      // Save updated actor
       await actor.save();
 
-      res.json({ msg: 'Actor updated successfully' });
-  } catch (error) {
-      console.error('Error updating actor:', error);
-      res.status(500).json({ msg: 'Server error' });
+      res.json({ msg: 'Actor updated successfully', actor });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
   }
-});
+);
+
+
 
 
 
@@ -559,5 +604,31 @@ router.put('/update-logo/:id', uploadddd.single('file'), async (req, res) => {
       res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;
