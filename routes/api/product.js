@@ -7,7 +7,9 @@ const { uploadProduct, processPDF, convertToPDF,processPDF2 } = require('../../F
 const path = require('path');
 const fs = require('fs');
 
-require('dotenv').config();router.get('/search-in-pdf', async (req, res) => {
+require('dotenv').config();
+
+router.get('/search-in-pdf', async (req, res) => {
     const { page = 0, size = 5, searchTerms, productName, date, id } = req.query; // Defaults for pagination and additional filters
     const limit = parseInt(size);
     const skip = parseInt(page) * limit;
@@ -372,13 +374,11 @@ router.put('/toggle-delete/:id', async (req, res) => {
         const productId = req.params.id;
 
         // Find the product by ID
-        const product = await Product.findById(productId);
+        const product = await Product.findByIdAndDelete(productId);
         if (!product) {
             return res.status(404).json({ msg: "Product not found" });
         }
 
-        // Toggle the `delete` field
-        product.delete = !product.delete;
 
         // Save the updated product
         const updatedProduct = await product.save();

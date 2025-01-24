@@ -8,6 +8,8 @@ const path = require('path');
 const fs = require('fs');
 
 require('dotenv').config();
+
+
 // POST: Create a new product
 router.post('/', uploadCotaProduct.single('file'), [
     check("name", "name is required").not().isEmpty(),

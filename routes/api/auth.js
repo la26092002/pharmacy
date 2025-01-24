@@ -219,7 +219,7 @@ router.post(
   "/register", upload.single('file'),
   [
     check("nom", "Name is required").not().isEmpty(),
-    check("prenom", "Prenom is required").not().isEmpty(),
+   
     check("willaya", "willaya is required").not().isEmpty(),
     check("category", "category is required").not().isEmpty(),
     check("telephone", "Please include a valid phone number").isMobilePhone(),
@@ -259,6 +259,9 @@ router.post(
         return res.status(400).json({ errors: [{ msg: "User already exists" }] });
       }
 
+      if (!prenom) {
+        prenom = " ";
+      }
       // Create a new actor with image file reference instead of PDF
       let actor = new Actor1({
         nom,
