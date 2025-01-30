@@ -14,7 +14,11 @@ dotenv.config();
 connectDB();
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all domains or specify your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
+
 
 // Body parser middleware
 app.use(express.json());
@@ -43,8 +47,9 @@ app.use('/api/offer', require('./routes/api/offre'));
 app.use('/api/admin', require('./routes/api/authAdmin'));
 app.use('/api/contact', require('./routes/api/contact'));
 
-// Serve static files from the 'uploads' directory
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 const PORT = process.env.PORT || 5000;
