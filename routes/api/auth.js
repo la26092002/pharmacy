@@ -642,7 +642,39 @@ router.put('/update-logo/:id', uploadddd.single('file'), async (req, res) => {
 
 
 
+// @route    GET /api/auth/logo/:id
+// @desc     Get actor's logo image by ID
+// @access   Public
+router.get('/logo/:id', async (req, res) => {
+  const { id } = req.params;  // Get actor ID from the URL parameter
 
+  try {
+    // Find the actor by ID
+    let actor = await Actor1.findById(id);
+    if (!actor) {
+      return res.status(404).json({ error: 'Actor not found' });
+    }
+
+    // Check if the actor has a logo
+    if (!actor.logo) {
+      return res.status(404).json({ error: 'Logo not found for this actor' });
+    }
+
+    // Construct the file path
+    const filePath = path.join('uploads/logos', actor.logo);
+
+    // Check if the file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Logo file not found' });
+    }
+
+    // Send the file as a response
+    res.sendFile(path.resolve(filePath));
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 
 
