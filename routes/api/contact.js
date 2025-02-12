@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Contact = require('../../models/Contact'); // Update the path if necessary
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 // @route POST /api/contact
-// @desc  Create a new contact entry
+// @desc  Create a new contact entry and send an email notification
 // @access Public
 router.post('/', async (req, res) => {
   const { name, email, message } = req.body;
@@ -18,25 +20,41 @@ router.post('/', async (req, res) => {
     const newContact = new Contact({ name, email, message });
     const savedContact = await newContact.save();
 
+    // Create transporter for sending email
+    const transporter = nodemailer.createTransport({
+      port: 465,
+      host: "smtp.gmail.com",
+      auth: {
+        user: 'larbibenyakhou.info@gmail.com',
+          pass: 'pwji maxd grmy kpvs',
+      },
+      secure: true,
+    });
+
+    const mailData = {
+      from: process.env.EMAIL_USER,
+      to: process.env.RECEIVER_EMAIL, // Email where you receive contact messages
+      subject: 'New Contact Message from ELSAIDALIYA',
+      html: `<p><b>Name:</b> ${name}</p>
+             <p><b>Email:</b> ${email}</p>
+             <p><b>Message:</b> ${message}</p>`
+    };
+
+    // Send email
+    transporter.sendMail(mailData, function (err, info) {
+      if (err) {
+        console.error('Error sending email:', err);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+
     res.status(201).json({
       message: 'Contact message successfully submitted!',
       contact: savedContact,
     });
   } catch (error) {
     console.error('Error saving contact message:', error);
-    res.status(500).json({ error: 'Server error. Please try again later.' });
-  }
-});
-
-// @route GET /api/contact
-// @desc  Get all contact messages
-// @access Public (Restrict access in production)
-router.get('/', async (req, res) => {
-  try {
-    const contacts = await Contact.find().sort({ date: -1 });
-    res.status(200).json(contacts);
-  } catch (error) {
-    console.error('Error fetching contact messages:', error);
     res.status(500).json({ error: 'Server error. Please try again later.' });
   }
 });
