@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
 
     const mailData = {
       from: "larbibenyakhou.info@gmail.com",
-      to: "larbibenyakhou.info@gmail.com", // Email where you receive contact messages
+      to: "contact@elsaidaliya.com", // Email where you receive contact messages
       subject: 'New Contact Message from ELSAIDALIYA',
       html: `<p><b>Name:</b> ${name}</p>
              <p><b>Email:</b> ${email}</p>
