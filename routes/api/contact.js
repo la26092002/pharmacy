@@ -32,8 +32,8 @@ router.post('/', async (req, res) => {
     });
 
     const mailData = {
-      from: process.env.EMAIL_USER,
-      to: process.env.RECEIVER_EMAIL, // Email where you receive contact messages
+      from: "larbibenyakhou.info@gmail.com",
+      to: "larbibenyakhou.info@gmail.com", // Email where you receive contact messages
       subject: 'New Contact Message from ELSAIDALIYA',
       html: `<p><b>Name:</b> ${name}</p>
              <p><b>Email:</b> ${email}</p>
