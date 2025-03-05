@@ -7,6 +7,11 @@ const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const path = require('path'); // Import the path module
 
+// import swagger ui module and swagger json file
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./config/swagger.json');
+
 const app = express();
 dotenv.config();
 
@@ -46,12 +51,20 @@ app.use('/api/productCota', require('./routes/api/productCota'));
 app.use('/api/offer', require('./routes/api/offre'));
 app.use('/api/admin', require('./routes/api/authAdmin'));
 app.use('/api/contact', require('./routes/api/contact'));
+app.use('/api/CommandOffer', require('./routes/api/commandeOffer'));
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`SERVER 192.168.21.241 STARTED ON PORT ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`SERVER 192.168.21.241 STARTED ON PORT ${PORT}`);
+  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+});

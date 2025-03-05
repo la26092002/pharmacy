@@ -1,0 +1,1814 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Auth API",
+        "version": "1.0.0",
+        "description": "API for user authentication, registration, and profile management"
+    },
+    "servers": [
+        {
+            "url": "https://pharmacy-ozpa.onrender.com/api",
+            "description": "Local server"
+        }
+    ],
+    "paths": {
+        "/auth/email": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Send a password reset code to the user's email",
+                "description": "Generates a 4-digit code, sends it via email, and returns a JWT token.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "required": [
+                                    "email"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token generated and email sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJhbGciOiJIUzI..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or user does not exist"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth/validate": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Validate the reset code and update the password",
+                "description": "Validates the code sent to the user's email and updates their password.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "number": {
+                                        "type": "string",
+                                        "example": "1234"
+                                    },
+                                    "newPassword": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "required": [
+                                    "number",
+                                    "newPassword"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset successful"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid code or missing fields"
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Authenticate user and generate a JWT token",
+                "description": "Authenticates a user using their phone number and password.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "numberPhone": {
+                                        "type": "string",
+                                        "example": "1234567890"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "required": [
+                                    "numberPhone",
+                                    "password"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "category": {
+                                            "type": "string",
+                                            "example": "Pharmacien"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJhbGciOiJIUzI..."
+                                        },
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Log in successful"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "John Doe"
+                                        },
+                                        "id": {
+                                            "type": "string",
+                                            "example": "12345"
+                                        },
+                                        "numberPhone": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "user@example.com"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid credentials or user does not exist"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register a new user",
+                "description": "Registers a new user with their details and an image file.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "prenom": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "telephone": {
+                                        "type": "string",
+                                        "example": "1234567890"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "willaya": {
+                                        "type": "string",
+                                        "example": "Algiers"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "example": "Pharmacien"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "nom",
+                                    "telephone",
+                                    "email",
+                                    "willaya",
+                                    "category",
+                                    "password",
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registration successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Registration successful"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJhbGciOiJIUzI..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or user already exists"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Fetch all actors with pagination and filters",
+                "description": "Returns a paginated list of actors with optional filters for willaya, nom, and category.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (starting from 0)",
+                        "schema": {
+                            "type": "integer",
+                            "example": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    },
+                    {
+                        "name": "willaya",
+                        "in": "query",
+                        "description": "Filter by willaya (case-insensitive)",
+                        "schema": {
+                            "type": "string",
+                            "example": "Algiers"
+                        }
+                    },
+                    {
+                        "name": "nom",
+                        "in": "query",
+                        "description": "Filter by nom (case-insensitive)",
+                        "schema": {
+                            "type": "string",
+                            "example": "John"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter by category (case-insensitive)",
+                        "schema": {
+                            "type": "string",
+                            "example": "Pharmacien"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of actors",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Actor"
+                                            }
+                                        },
+                                        "totalItems": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "totalPages": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "currentPage": {
+                                            "type": "integer",
+                                            "example": 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth/download": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Download a file",
+                "description": "Downloads a file by its ID.",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "description": "File ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "filename.pdf"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully"
+                    },
+                    "404": {
+                        "description": "File not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth/update/{id}": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Update an actor's information",
+                "description": "Updates an actor's details, including name, phone, email, etc.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Actor ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12345"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ActorUpdate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actor updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "msg": {
+                                            "type": "string",
+                                            "example": "Actor updated successfully"
+                                        },
+                                        "actor": {
+                                            "$ref": "#/components/schemas/Actor"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or duplicate phone/email"
+                    },
+                    "404": {
+                        "description": "Actor not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/auth/Data/{id}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get actor's data by ID",
+                "description": "Returns an actor's data excluding their password.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Actor ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "12345"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Actor data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "actor": {
+                                            "$ref": "#/components/schemas/Actor"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Actor not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/admin/register": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Register a new admin",
+                "description": "Registers a new admin with name, email, password, and phone number.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminRegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Admin registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Admin registered successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or admin already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Admin already exists"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/admin/login": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Admin login",
+                "description": "Authenticates an admin using their phone number and password.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdminLoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJhbGciOiJIUzI..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing phone number or password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Phone Number and password are required"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Admin not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Admin not found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/CommandOffer": {
+            "post": {
+                "tags": [
+                    "CommandOffer"
+                ],
+                "summary": "Create a new CommandOffer",
+                "description": "Creates a new CommandOffer with user and offers.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CommandOfferRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "CommandOffer created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommandOffer"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "CommandOffer"
+                ],
+                "summary": "Get all CommandOffers",
+                "description": "Returns a list of all CommandOffers with populated user and offers.",
+                "responses": {
+                    "200": {
+                        "description": "List of CommandOffers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CommandOffer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/CommandOffer/offers/{id}": {
+            "put": {
+                "tags": [
+                    "CommandOffer"
+                ],
+                "summary": "Update offers in a CommandOffer",
+                "description": "Updates the offers in a CommandOffer if the status is not confirmed.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "offers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "CommandOffer updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommandOffer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot update offers when status is confirmed"
+                    },
+                    "404": {
+                        "description": "CommandOffer not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/CommandOffer/status/{id}": {
+            "put": {
+                "tags": [
+                    "CommandOffer"
+                ],
+                "summary": "Update status of a CommandOffer",
+                "description": "Updates the status of a CommandOffer (pending, confirmed, canceled).",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "confirmed",
+                                            "canceled"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "CommandOffer status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommandOffer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid status value"
+                    },
+                    "404": {
+                        "description": "CommandOffer not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/contact": {
+            "post": {
+                "tags": [
+                    "Contact"
+                ],
+                "summary": "Create a new contact entry",
+                "description": "Creates a new contact entry and sends an email notification.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContactRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact message submitted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Contact"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "All fields are required"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/offre": {
+            "post": {
+                "tags": [
+                    "Offre"
+                ],
+                "summary": "Create a new offre",
+                "description": "Creates a new offre with a name, actor, and PDF file.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Offre created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Offre"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or file not uploaded"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Offre"
+                ],
+                "summary": "Get all offres",
+                "description": "Returns a paginated list of offres with optional filters.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 5
+                        }
+                    },
+                    {
+                        "name": "offreName",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of offres",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Offre"
+                                            }
+                                        },
+                                        "totalItems": {
+                                            "type": "integer"
+                                        },
+                                        "totalPages": {
+                                            "type": "integer"
+                                        },
+                                        "currentPage": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/offre/download": {
+            "get": {
+                "tags": [
+                    "Offre"
+                ],
+                "summary": "Download an offre PDF",
+                "description": "Downloads the PDF file associated with an offre.",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully"
+                    },
+                    "404": {
+                        "description": "PDF file not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/offre/{id}": {
+            "get": {
+                "tags": [
+                    "Offre"
+                ],
+                "summary": "Get an offre by ID",
+                "description": "Returns a single offre by its ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Offre details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Offre"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Offre not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/product": {
+            "post": {
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Create a new product",
+                "description": "Creates a new product with a name, actor, and PDF file.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or file not uploaded"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Get all products",
+                "description": "Returns a paginated list of products with optional filters.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 5
+                        }
+                    },
+                    {
+                        "name": "productName",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of products",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        },
+                                        "totalItems": {
+                                            "type": "integer"
+                                        },
+                                        "totalPages": {
+                                            "type": "integer"
+                                        },
+                                        "currentPage": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/product/download": {
+            "get": {
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Download a product PDF",
+                "description": "Downloads the PDF file associated with a product.",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully"
+                    },
+                    "404": {
+                        "description": "PDF file not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/product/{id}": {
+            "get": {
+                "tags": [
+                    "Product"
+                ],
+                "summary": "Get a product by ID",
+                "description": "Returns a single product by its ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/productCota": {
+            "post": {
+                "tags": [
+                    "ProductCota"
+                ],
+                "summary": "Create a new productCota",
+                "description": "Creates a new productCota with a name, actor, and PDF file.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "actor": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ProductCota created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductCota"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or file not uploaded"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "ProductCota"
+                ],
+                "summary": "Get all productCotas",
+                "description": "Returns a paginated list of productCotas with optional filters.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 5
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of productCotas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductCota"
+                                            }
+                                        },
+                                        "totalItems": {
+                                            "type": "integer"
+                                        },
+                                        "totalPages": {
+                                            "type": "integer"
+                                        },
+                                        "currentPage": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/productCota/download": {
+            "get": {
+                "tags": [
+                    "ProductCota"
+                ],
+                "summary": "Download a productCota PDF",
+                "description": "Downloads the PDF file associated with a productCota.",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded successfully"
+                    },
+                    "404": {
+                        "description": "PDF file not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/productCota/{id}": {
+            "get": {
+                "tags": [
+                    "ProductCota"
+                ],
+                "summary": "Get a productCota by ID",
+                "description": "Returns a single productCota by its ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ProductCota details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductCota"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "ProductCota not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Actor": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "prenom": {
+                        "type": "string",
+                        "example": "Doe"
+                    },
+                    "telephone": {
+                        "type": "string",
+                        "example": "1234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@example.com"
+                    },
+                    "willaya": {
+                        "type": "string",
+                        "example": "Algiers"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Pharmacien"
+                    },
+                    "dataPdf": {
+                        "type": "string",
+                        "example": "filename.pdf"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    },
+                    "status": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "logo": {
+                        "type": "string",
+                        "example": "logo.png"
+                    },
+                    "nomSociete": {
+                        "type": "string",
+                        "example": "My Company"
+                    },
+                    "subscribes": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            },
+            "ActorUpdate": {
+                "type": "object",
+                "properties": {
+                    "nom": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "prenom": {
+                        "type": "string",
+                        "example": "Doe"
+                    },
+                    "telephone": {
+                        "type": "string",
+                        "example": "1234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@example.com"
+                    },
+                    "willaya": {
+                        "type": "string",
+                        "example": "Algiers"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Pharmacien"
+                    },
+                    "logo": {
+                        "type": "string",
+                        "example": "logo.png"
+                    },
+                    "nomSociete": {
+                        "type": "string",
+                        "example": "My Company"
+                    }
+                }
+            },
+            "Admin": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Admin"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    },
+                    "numberPhone": {
+                        "type": "string",
+                        "example": "1234567890"
+                    },
+                    "status": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            },
+            "AdminRegisterRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Admin"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    },
+                    "numberPhone": {
+                        "type": "string",
+                        "example": "1234567890"
+                    }
+                },
+                "required": [
+                    "name",
+                    "email",
+                    "password",
+                    "numberPhone"
+                ]
+            },
+            "AdminLoginRequest": {
+                "type": "object",
+                "properties": {
+                    "numberPhone": {
+                        "type": "string",
+                        "example": "1234567890"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    }
+                },
+                "required": [
+                    "numberPhone",
+                    "password"
+                ]
+            },
+            "CommandOffer": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/Actor"
+                    },
+                    "offers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductCota"
+                        }
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "canceled"
+                        ],
+                        "example": "pending"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            },
+            "Contact": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@example.com"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "This is a sample message."
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            },
+            "Offre": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Sample Offre"
+                    },
+                    "dataPdf": {
+                        "type": "string",
+                        "example": "filename.pdf"
+                    },
+                    "actor": {
+                        "$ref": "#/components/schemas/Actor"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            },
+            "Product": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Sample Product"
+                    },
+                    "dataPdf": {
+                        "type": "string",
+                        "example": "filename.pdf"
+                    },
+                    "actor": {
+                        "$ref": "#/components/schemas/Actor"
+                    },
+                    "delete": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            },
+            "ProductCota": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "12345"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Sample ProductCota"
+                    },
+                    "dataPdf": {
+                        "type": "string",
+                        "example": "filename.pdf"
+                    },
+                    "actor": {
+                        "$ref": "#/components/schemas/Actor"
+                    },
+                    "delete": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01T00:00:00Z"
+                    }
+                }
+            }
+        }
+    }
+}
